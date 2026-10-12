@@ -135,3 +135,20 @@ CREATE TABLE IF NOT EXISTS audit_events (
  created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS audit_recent_idx ON audit_events(created_at DESC);
+
+-- Supabase safety boundary: this application accesses PostgreSQL from its server
+-- through a privileged connection, not from supabase-js in the browser.
+-- Default-deny Row Level Security prevents anon/authenticated Data API access,
+-- including on older Supabase projects that automatically grant table privileges.
+ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.programs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.certificate_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.api_clients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.claim_challenges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.certificate_claims ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.request_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
