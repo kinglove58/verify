@@ -1,0 +1,4 @@
+legalName,email,phone,cohort,score,outcome
+Demo Candidate One,demo.one@example.com,+2348000000001,Lagos Pilot 2026,89,passed
+Demo Candidate Two,demo.two@example.com,+2348000000002,Lagos Pilot 2026,94,passed
+Demo Candidate Three,demo.three@example.com,+2348000000003,Lagos Pilot 2026,42,failed

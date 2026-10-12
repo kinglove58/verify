@@ -9,9 +9,12 @@
     "lint": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:bootstrap": "node scripts/bootstrap.mjs"
+    "db:bootstrap": "node scripts/bootstrap.mjs",
+    "test:integration": "tsx --test tests/registry-db.test.ts"
   },
-  "engines": { "node": ">=20.9" },
+  "engines": {
+    "node": ">=20.9"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "csv-parse": "^5.6.0",

@@ -11,7 +11,7 @@ Verify gives an authorized training organization controlled candidate entry, ind
 - PostgreSQL hosted on free-tier Supabase during the demo.
 - Password-hashed staff authentication, HttpOnly database-backed sessions and rate limiting.
 - PDF-Lib and QR code generation; optional SMTP for holder possession challenges.
-- Vercel deployment supported with no paid-tier code dependencies. The free plan is for the eligible non-commercial demo; upgrade to a commercial plan for commercial production.
+- Render Free web service recommended for the company demonstration. Vercel Hobby is for personal, non-commercial use only, so don't use it for commercial company deployments.
 
 ## Quick start
 

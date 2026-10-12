@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: verify-technician-registry
+    runtime: node
+    plan: free
+    buildCommand: npm install --no-audit --no-fund && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SECURITY_PEPPER
+        generateValue: true
+      - key: NEXT_PUBLIC_BASE_URL
+        sync: false
+      - key: ISSUER_NAME
+        value: Demonstration Training Organization
+      - key: ISSUER_APPROVED
+        value: "false"
