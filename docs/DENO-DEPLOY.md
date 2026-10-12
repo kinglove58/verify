@@ -33,7 +33,7 @@ Deno Deploy's **new platform** at https://console.deno.com natively hosts Next.j
 - The GitHub repo is currently public; do not commit real people, login credentials, connection strings, mail passwords, or API tokens.
 - Supabase's tables have RLS enabled with **no anon/authenticated policies**. Server-side PostgreSQL connections handle database access; browser users never connect directly to the database.
 - Don't mark demonstration certificates as real professional qualification or NEMSA authorization.
-- Deno Deploy's Free plan has usage quotas, including monthly requests/bandwidth limits. Inspect its current billing settings and set hard spending protections where available. Do not select Pro.
+- Deno Deploy's Free plan has usage quotas, including monthly requests/bandwidth limits, and **even tighter limits before credit-card verification**. The official Deno changelog says Free organizations exceeding limits have their apps paused until the next billing cycle. Avoid adding a card if funds are an issue; do not select Pro. Reference: https://docs.deno.com/deploy/changelog/ (September 26, 2025).
 - No environment secrets or admin account have been configured merely by adding this guide; a working deployed site requires the deployment steps above.
 
 ## Verification references
