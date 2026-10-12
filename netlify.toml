@@ -1,0 +1,8 @@
+# Netlify automatically provisions its Next.js OpenNext adapter.
+# No Next.js output:export: this project needs server actions and API routes.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
