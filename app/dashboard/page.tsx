@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/auth";
 import {query} from "@/lib/db";
-import {addProgram,addCandidate,importCandidates,decideEnrollment,addStaff,disableStaff,revokeApiKey,logout} from "@/app/actions";
+import {addProgram,addCandidate,importCandidates,decideEnrollment,addStaff,disableStaff,revokeApiKey,logout,changeOwnPassword} from "@/app/actions";
 import ApiKeyCreate from "./ApiKeyCreate";
 import type {Metadata} from "next";
+import {effectiveStatus} from "@/lib/crypto";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Administration dashboard"};
 
 type Program={id:string;code:string;title:string;active:boolean};
 type Pending={id:string;legal_name:string;email:string;cohort:string;score:number;outcome:string;title:string;submitted_by:string;created_at:string};
-type Cert={id:string;public_id:string;holder_name:string;course_title:string;state:string;is_demo:boolean;issued_at:string};
+type Cert={id:string;public_id:string;holder_name:string;course_title:string;state:string;is_demo:boolean;issued_at:string;expires_at:string|null};
 type Team={id:string;email:string;role:string;enabled:boolean};
 type Client={id:string;label:string;created_at:string;revoked_at:string|null};
 type Audit={id:string;action:string;entity_type:string;created_at:string};
@@ -19,7 +20,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{no
   query<Program>("SELECT id,code,title,active FROM programs ORDER BY created_at DESC"),
   query<Pending>(`SELECT e.id,c.legal_name,c.email,e.cohort,e.score,e.outcome,p.title,e.submitted_by,e.created_at FROM enrollments e
      JOIN candidates c ON c.id=e.candidate_id JOIN programs p ON p.id=e.program_id WHERE e.state='submitted' ORDER BY e.created_at DESC LIMIT 100`),
-  query<Cert>("SELECT id,public_id,holder_name,course_title,state,is_demo,issued_at FROM certificates ORDER BY created_at DESC LIMIT 75"),
+  query<Cert>("SELECT id,public_id,holder_name,course_title,state,is_demo,issued_at,expires_at FROM certificates ORDER BY created_at DESC LIMIT 75"),
   query<Team>("SELECT id,email,role,enabled FROM staff ORDER BY created_at"),
   query<Client>("SELECT id,label,created_at,revoked_at FROM api_clients ORDER BY created_at DESC LIMIT 50"),
   query<Audit>("SELECT id,action,entity_type,created_at FROM audit_events ORDER BY created_at DESC LIMIT 20"),
@@ -41,7 +42,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{no
    <nav className="dashnav" aria-label="Dashboard sections"><a href="#certificates">Certificates</a><a href="#reviews">Approvals</a><a href="#candidates">Candidates</a><a href="#programs">Programs</a>{admin&&<a href="#integrations">API access</a>}{admin&&<a href="#team">Team</a>}<a href="#audit">Audit</a></nav>
    <section id="certificates" className="panel"><div className="sectiontitle"><div><h2>Issued certificates</h2><p>Live certificate statuses and download-ready PDF records.</p></div><span className="smallpill">{certs.length} recent</span></div>
     <div className="tablewrap"><table className="datatable"><thead><tr><th>Certificate</th><th>Holder</th><th>Training</th><th>Status</th><th>Details</th></tr></thead><tbody>
-     {certs.map(c=><tr key={c.id}><td className="mono">{c.public_id}{c.is_demo&&<small className="subline">DEMO</small>}</td><td>{c.holder_name}</td><td>{c.course_title}</td><td><span className={"status-pill "+(c.state==="active"?"green":"red")}>{c.state}</span></td><td><Link href={"/dashboard/certificates/"+c.public_id}>Manage ↗</Link></td></tr>)}
+     {certs.map(c=><tr key={c.id}><td className="mono">{c.public_id}{c.is_demo&&<small className="subline">DEMO</small>}</td><td>{c.holder_name}</td><td>{c.course_title}</td><td><span className={"status-pill "+(effectiveStatus(c.state,c.expires_at)==="active"?"green":"red")}>{effectiveStatus(c.state,c.expires_at)}</span></td><td><Link href={"/dashboard/certificates/"+c.public_id}>Manage ↗</Link></td></tr>)}
      {!certs.length&&<tr><td colSpan={5} className="empty">No certificates yet. Submit a successful candidate and have a different officer approve it.</td></tr>}
     </tbody></table></div>
    </section>
@@ -92,6 +93,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{no
      <button className="secondarybutton">Create staff account</button></form></div>
      <div><h3>Current team</h3>{team.map(m=><div className="listrow" key={m.id}><span><b>{m.email}</b><small>{m.role} · {m.enabled?"Active":"Disabled"}</small></span>{m.enabled&&m.id!==staff.id&&<form action={disableStaff}><input name="staffId" type="hidden" value={m.id}/><button className="ghost mini">Disable</button></form>}</div>)}</div></div>
    </section>}
+   <section id="security" className="panel"><div className="sectiontitle"><div><h2>Your account security</h2><p>Change your password and sign in again to continue.</p></div></div><form action={changeOwnPassword} className="formgrid"><label>Current password<input name="currentPassword" type="password" required/></label><label>New password (14+ characters)<input name="newPassword" type="password" minLength={14} required/></label><div className="formfooter"><button className="secondarybutton">Change password and sign out</button></div></form></section>
    <section id="audit" className="panel"><div className="sectiontitle"><div><h2>Audit trail</h2><p>Recent registry activity. Certificate-specific history is available from each certificate's details.</p></div></div>
     <div className="auditlist">{logs.map(l=><div key={l.id}><span className="dot"/><strong>{l.action.replaceAll("."," · ")}</strong><small>{l.entity_type} · {new Date(l.created_at).toLocaleString("en-NG",{timeZone:"Africa/Lagos"})}</small></div>)}{!logs.length&&<p>No activity recorded.</p>}</div>
    </section>

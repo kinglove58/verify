@@ -176,3 +176,18 @@ export async function revokeApiKey(data:FormData) {
  await audit(staff.id,"api_client.revoke","api_client",id);
  notice("API client revoked.");
 }
+
+export async function changeOwnPassword(data:FormData) {
+ const staff=await requireStaff();
+ const current=field(data,"currentPassword"),replacement=field(data,"newPassword");
+ if(replacement.length<14||replacement.length>200||current===replacement)throw new Error("Use a new password of 14–200 characters.");
+ if(!await checkPassword(staff.email,current))throw new Error("Current password does not match.");
+ const hash=await bcrypt.hash(replacement,12);
+ await transaction(async client=>{
+  await client.query("UPDATE staff SET password_hash=$2 WHERE id=$1",[staff.id,hash]);
+  await client.query("DELETE FROM sessions WHERE staff_id=$1",[staff.id]);
+ });
+ await audit(staff.id,"staff.password_changed","staff",staff.id);
+ await endSession();
+ redirect("/login");
+}

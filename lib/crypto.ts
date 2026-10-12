@@ -25,7 +25,7 @@ export function safeEquals(a: string,b: string): boolean {
 }
 export function effectiveStatus(state: string, expiresAt: string | Date | null): string {
   if (state !== "active") return state;
-  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) return "expired";
+  if (expiresAt && new Date(expiresAt).toISOString().slice(0,10) < new Date().toISOString().slice(0,10)) return "expired";
   return "active";
 }
 export function maskName(name: string): string {

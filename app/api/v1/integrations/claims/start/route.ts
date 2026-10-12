@@ -3,6 +3,7 @@ import { apiClient,jsonError } from "@/lib/api-auth";
 import { query,audit } from "@/lib/db";
 import { findCertificate } from "@/lib/certificates";
 import { effectiveStatus,oneTimeCode,otpHash,maskEmail } from "@/lib/crypto";
+import { limitRequest } from "@/lib/auth";
 import { sendHolderCode } from "@/lib/email";
 export const runtime="nodejs";
 export async function POST(request:Request) {
@@ -13,6 +14,7 @@ export async function POST(request:Request) {
   const row=await findCertificate(input.certificateId);
   if(!row)return jsonError("Certificate not found",404);
   if(effectiveStatus(row.state,row.expires_at)!=="active")return jsonError("Certificate is not active",409);
+  await limitRequest("holder-email:"+client.id,row.id,3,60);
   if(!process.env.SMTP_HOST||!process.env.SMTP_FROM||!process.env.SMTP_USER||!process.env.SMTP_PASSWORD)return jsonError("Holder confirmation is not configured",503);
   const prior=await query<{subject_ref:string}>("SELECT subject_ref FROM certificate_claims WHERE certificate_id=$1 AND client_id=$2",[row.id,client.id]);
   if(prior[0]&&prior[0].subject_ref!==input.subjectRef)return jsonError("Certificate is already linked to another account",409);
