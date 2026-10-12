@@ -3,6 +3,7 @@ import { requireStaff } from "@/lib/auth";
 import {query} from "@/lib/db";
 import {addProgram,addCandidate,importCandidates,decideEnrollment,addStaff,disableStaff,revokeApiKey,logout,changeOwnPassword} from "@/app/actions";
 import ApiKeyCreate from "./ApiKeyCreate";
+import CohortField from "./CohortField";
 import type {Metadata} from "next";
 import {effectiveStatus} from "@/lib/crypto";
 export const dynamic="force-dynamic";
@@ -58,7 +59,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{no
      <label>Verified email for holder confirmation<input type="email" name="email" required placeholder="candidate@example.com"/></label>
      <label>Phone number (optional)<input type="tel" name="phone" maxLength={30} placeholder="+234 ..."/></label>
      <label>Program<select name="programId" required defaultValue=""><option value="" disabled>Select training program</option>{programs.filter(p=>p.active).map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select></label>
-     <label>Training cohort<input name="cohort" required placeholder="Lagos · Cohort 01 / 2026"/></label>
+     <CohortField/>
      <label>Assessment score (%)<input type="number" name="score" min={0} max={100} step="0.01" required/></label>
      <label>Result<select name="outcome" required><option value="passed">Passed</option><option value="failed">Failed</option></select></label>
      <div className="formfooter"><button className="primary" disabled={!programs.length}>Submit for independent review →</button></div>
