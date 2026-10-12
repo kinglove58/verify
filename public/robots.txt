@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /dashboard
+Disallow: /login
+Disallow: /verify
+Disallow: /api
