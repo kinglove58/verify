@@ -11,7 +11,7 @@ Verify gives an authorized training organization controlled candidate entry, ind
 - PostgreSQL hosted on free-tier Supabase during the demo.
 - Password-hashed staff authentication, HttpOnly database-backed sessions and rate limiting.
 - PDF-Lib and QR code generation; optional SMTP for holder possession challenges.
-- Netlify Free is the recommended no-credit-card host for this company demonstration. Vercel Hobby is limited to personal, non-commercial use. Render may require a payment method even for its Free service.
+- Deno Deploy Free is the recommended full-stack host for the company demonstration, using the existing Supabase Free database. Netlify was unsuitable for this account (account suspended); Render demanded payment-card verification.
 
 ## Quick start
 
@@ -26,7 +26,7 @@ Verify gives an authorized training organization controlled candidate entry, ind
 9. Under **API clients**, create the EDN Light server-to-server key. Copy it immediately and keep it secret.
 10. Configure SMTP to enable the optional certificate holder email challenge. Without SMTP, the integration can check certificate status but **cannot confirm holder ownership or automatically mark a professional fully verified**.
 
-Start with [Netlify Free Deployment](docs/NETLIFY.md) (recommended; no credit card), or [Render Deployment](docs/DEPLOYMENT.md). See also [API Contract](docs/API.md) and [Security and Acceptance](docs/SECURITY.md).
+Start with [Deno Deploy Free deployment](docs/DENO-DEPLOY.md) (recommended). Previous, nonselected alternatives are documented in [Netlify](docs/NETLIFY.md) and [Render](docs/DEPLOYMENT.md). See [API Contract](docs/API.md) and [Security and Acceptance](docs/SECURITY.md).
 
 ## Roles
 - `admin`: manage staff, API clients, programs, candidates, and approvals.
