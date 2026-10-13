@@ -8,11 +8,11 @@ export const dynamic="force-dynamic";
 export default async function CertificateAdmin({params}:{params:Promise<{id:string}>}){
  const user=await requireStaff();
  const row=await findCertificate((await params).id);
- if(!row)return <main className="narrow searchpage"><h1>Certificate not found</h1><Link href="/dashboard">← Dashboard</Link></main>;
+ if(!row)return <main className="narrow searchpage"><h1>Certificate not found</h1><Link href="/dashboard/certificates">← Certificates</Link></main>;
  const events=await query<{id:string;action:string;reason:string|null;created_at:Date}>(`SELECT id,action,reason,created_at FROM certificate_events WHERE certificate_id=$1 ORDER BY created_at DESC`,[row.id]);
  const canApprove=["admin","approver"].includes(user.role),status=effectiveStatus(row.state,row.expires_at);
  return <main className="narrow detailsadmin">
-  <Link href="/dashboard" className="backlink">← Return to dashboard</Link><span className="eyebrow">CREDENTIAL RECORD</span><h1>{row.holder_name}</h1><p className="mono">{row.public_id}</p>
+  <Link href="/dashboard/certificates" className="backlink">← Return to certificates</Link><span className="eyebrow">CREDENTIAL RECORD</span><h1>{row.holder_name}</h1><p className="mono">{row.public_id}</p>
   {row.is_demo&&<div className="demoalert block">Demonstration-only record</div>}
   <div className="panel"><h2>Certificate details</h2><dl className="resultdetails">
    <div><dt>Training</dt><dd>{row.course_title}</dd></div><div><dt>Issuer</dt><dd>{row.issuer_name}</dd></div>

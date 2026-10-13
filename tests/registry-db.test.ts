@@ -14,7 +14,8 @@ test("PostgreSQL registry constraints and lifecycle",async()=>{
   const program=(await pool.query<{id:string}>(`INSERT INTO programs(code,title,validity_months) VALUES($1,'Demo Installation',24) RETURNING id`,[code])).rows[0].id;
   const candidate=(await pool.query<{id:string}>(`INSERT INTO candidates(legal_name,email,created_by) VALUES('Example Holder','example.holder@example.invalid',$1) RETURNING id`,[staff1])).rows[0].id;
   const record=(await pool.query<{id:string}>(`INSERT INTO enrollments(candidate_id,program_id,cohort,score,outcome,submitted_by) VALUES($1,$2,'October 2026',91,'passed',$3) RETURNING id`,[candidate,program,staff1])).rows[0].id;
-  await pool.query("UPDATE enrollments SET state='approved',decided_by=$2,decided_at=now() WHERE id=$1",[record,staff2]);
+  await pool.query("UPDATE enrollments SET state='approved',decided_by=$2,decided_at=now() WHERE id=$1",[record,staff1]);
+  assert.equal((await pool.query("SELECT submitted_by=decided_by AS same_officer FROM enrollments WHERE id=$1",[record])).rows[0].same_officer,true);
   const id=newCertificateId();
   const cert=(await pool.query<{id:string}>(`INSERT INTO certificates(enrollment_id,public_id,holder_name,course_title,issuer_name,created_by) VALUES($1,$2,'Example Holder','Demo Installation','Demo Issuer',$3) RETURNING id`,[record,id,staff2])).rows[0].id;
   const found=await pool.query(`SELECT c.public_id,p.email FROM certificates c JOIN enrollments e ON e.id=c.enrollment_id JOIN candidates p ON p.id=e.candidate_id WHERE c.public_id=$1`,[id]);

@@ -8,7 +8,7 @@
 - **Eligible for hiring:** EDN Light decision including appropriate identity tier, background/credential checks, service area, professional status, membership, and current compliance.
 
 ## Existing controls
-- Maker-checker separation on enrollment approvals.
+- Single authorized staff-member approval (admin or approver); every decision is audited. A submitting officer may also approve their own record. This is a deliberate operational simplification with reduced separation of duties.
 - Only successful assessments can lead to issuance.
 - Random 80-bit certificate IDs (not sequential).
 - Revoked certificates cannot be reactivated.

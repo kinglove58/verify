@@ -9,7 +9,7 @@ import { checkPassword,startSession,endSession,requestFingerprint,limitRequest,r
 import { newCertificateId,secretHash,secureToken } from "@/lib/crypto";
 
 function field(data:FormData,key:string):string {return String(data.get(key)||"").trim();}
-function notice(message:string):never { redirect("/dashboard?notice="+encodeURIComponent(message)); }
+function notice(message:string,path="/dashboard"):never { redirect(path+"?notice="+encodeURIComponent(message)); }
 const candidateSchema=z.object({
  legalName:z.string().min(3).max(160),
  email:z.email().max(254),
@@ -40,7 +40,7 @@ export async function addProgram(data:FormData) {
  const rows=await query<{id:string}>("INSERT INTO programs(code,title,description,validity_months) VALUES($1,$2,$3,$4) RETURNING id",
  [parsed.code,parsed.title,parsed.description,parsed.months===""?null:parsed.months]);
  await audit(staff.id,"program.create","program",rows[0].id);
- notice("Training program created.");
+ notice("Training program created.","/dashboard/programs");
 }
 async function createCandidate(input:z.infer<typeof candidateSchema>, staffId:string) {
  return transaction(async client=>{
@@ -61,7 +61,7 @@ export async function addCandidate(data:FormData) {
    cohort:field(data,"cohort"),score:Number(field(data,"score")),outcome:field(data,"outcome"),programId:field(data,"programId")
  });
  await createCandidate(input,staff.id);
- notice("Candidate recorded for independent approval.");
+ notice("Candidate recorded. You can approve and issue the certificate from the Approvals page.","/dashboard/candidates");
 }
 export async function importCandidates(data:FormData) {
  const staff=await requireRole("admin","data_entry","approver");
@@ -84,7 +84,7 @@ export async function importCandidates(data:FormData) {
     await client.query("INSERT INTO audit_events(actor_id,action,entity_type,entity_id) VALUES($1,'enrollment.import','enrollment',$2)",[staff.id,enrollment.id]);
   }
  });
- notice(inputs.length+" candidates imported for review.");
+ notice(inputs.length+" candidates imported for approval.","/dashboard/candidates");
 }
 export async function decideEnrollment(data:FormData) {
  const staff=await requireRole("admin","approver");
@@ -97,8 +97,7 @@ export async function decideEnrollment(data:FormData) {
     WHERE e.id=$1 FOR UPDATE OF e`,[id]);
   const row=result.rows[0];
   if(!row||row.state!=="submitted") throw new Error("Enrollment is not awaiting review.");
-  if(row.submitted_by===staff.id) throw new Error("A different officer must approve the candidate.");
-  if(decision==="approve"&&row.outcome!=="passed") throw new Error("Failed candidates cannot receive a certificate.");
+   if(decision==="approve"&&row.outcome!=="passed") throw new Error("Failed candidates cannot receive a certificate.");
   if(decision==="reject"&&reason.length<10) throw new Error("Please provide a meaningful rejection reason.");
   await client.query("UPDATE enrollments SET state=$2,decided_by=$3,decided_at=now(),decided_reason=$4 WHERE id=$1",
     [id,decision==="approve"?"approved":"rejected",staff.id,reason||null]);
@@ -119,7 +118,7 @@ export async function decideEnrollment(data:FormData) {
     [staff.id,created.id,JSON.stringify({publicId,isDemo:!approved})]);
   return publicId;
  });
- notice(certificateId?"Certificate issued: "+certificateId:"Enrollment rejected.");
+ notice(certificateId?"Certificate issued: "+certificateId:"Enrollment rejected.","/dashboard/approvals");
 }
 export async function changeCertificateStatus(data:FormData) {
  const staff=await requireRole("admin","approver");
@@ -137,7 +136,7 @@ export async function changeCertificateStatus(data:FormData) {
   await client.query("INSERT INTO audit_events(actor_id,action,entity_type,entity_id,metadata) VALUES($1,$2,'certificate',$3,$4)",
     [staff.id,"certificate."+state,id,JSON.stringify({reason})]);
  });
- notice("Certificate status updated.");
+ notice("Certificate status updated.","/dashboard/certificates");
 }
 export async function addStaff(data:FormData) {
  const actor=await requireRole("admin");
@@ -147,7 +146,7 @@ export async function addStaff(data:FormData) {
  const hash=await bcrypt.hash(password,12);
  const created=await query<{id:string}>("INSERT INTO staff(email,password_hash,role) VALUES($1,$2,$3) RETURNING id",[email,hash,role]);
  await audit(actor.id,"staff.create","staff",created[0].id,{role});
- notice("Staff account created. Give their temporary password securely and ask them to change it.");
+ notice("Staff account created. Give their temporary password securely and ask them to change it.","/dashboard/team");
 }
 export async function disableStaff(data:FormData) {
  const actor=await requireRole("admin"),id=z.uuid().parse(field(data,"staffId"));
@@ -157,7 +156,7 @@ export async function disableStaff(data:FormData) {
    await client.query("DELETE FROM sessions WHERE staff_id=$1",[id]);
  });
  await audit(actor.id,"staff.disable","staff",id);
- notice("Staff access disabled.");
+ notice("Staff access disabled.","/dashboard/team");
 }
 export type ApiKeyState={error?:string;token?:string};
 export async function createApiKey(_:ApiKeyState,data:FormData):Promise<ApiKeyState> {
@@ -174,7 +173,7 @@ export async function revokeApiKey(data:FormData) {
  const staff=await requireRole("admin"),id=z.uuid().parse(field(data,"clientId"));
  await query("UPDATE api_clients SET revoked_at=now() WHERE id=$1 AND revoked_at IS NULL",[id]);
  await audit(staff.id,"api_client.revoke","api_client",id);
- notice("API client revoked.");
+ notice("API client revoked.","/dashboard/integrations");
 }
 
 export async function changeOwnPassword(data:FormData) {
